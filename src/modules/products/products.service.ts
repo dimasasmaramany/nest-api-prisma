@@ -1,15 +1,54 @@
 import { Injectable } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { PrismaService } from 'src/modules/prisma/prisma.service';
+import { emptyResponse, successResponse } from 'src/common/helpers/response.helper';
+import { generateSlug } from 'src/common/helpers/slug.helper';
 
 @Injectable()
 export class ProductsService {
-  create(createProductDto: CreateProductDto) {
-    return 'This action adds a new product';
+  constructor(private readonly prisma: PrismaService) { }
+
+  async create(
+    createProductDto: CreateProductDto,
+    files: Express.Multer.File[],
+  ) {
+    // ambil path file jadi array
+    const imagePaths = files?.map((file) => `/uploads/${file.filename}`) || [];
+    // 🔥 generate slug otomatis
+
+    let slug = generateSlug(createProductDto.name);
+
+    // 🔥 pastikan tidak duplicate
+
+    let isExist = await this.prisma.product.findUnique({
+      where: { slug },
+    });
+
+    while (isExist) {
+      slug = generateSlug(createProductDto.name);
+      isExist = await this.prisma.product.findUnique({
+        where: { slug },
+      });
+    }
+    
+    const product = await this.prisma.product.create({
+      data: {
+        ...createProductDto,
+        slug,
+        images: imagePaths, // 🔥 Sesuai schema (image Json)
+      },
+    });
+    return successResponse(product, 'Produk berhasil dibuat');
   }
 
-  findAll() {
-    return `This action returns all products`;
+  async findAll() {
+    const products = await this.prisma.product.findMany();
+    if (products.length === 0) {
+
+      return emptyResponse();
+    }
+    return successResponse(products);
   }
 
   findOne(id: number) {

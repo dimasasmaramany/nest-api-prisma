@@ -62,7 +62,7 @@ model Product {
   slug        String      @unique
   price       Float       @default(0)
   stock       Int         @default(0)
-  image       String
+  images      Json
   categoryId  Int
   weight      Int         @default(0)
   createdAt   DateTime    @default(now())

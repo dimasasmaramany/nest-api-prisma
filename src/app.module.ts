@@ -8,6 +8,7 @@ import { UsersModule } from './modules/users/users.module';
 import { AuthGuard } from './common/guards/auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { ProductsModule } from './modules/products/products.module';
+import { CategoryModule } from './modules/category/category.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ProductsModule } from './modules/products/products.module';
     PrismaModule,
     UsersModule,
     ProductsModule,
+    CategoryModule,
   ],
   controllers: [AppController],
   providers: [

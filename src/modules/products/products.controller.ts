@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import {
   Controller,
   Get,
@@ -6,20 +7,36 @@ import {
   Patch,
   Param,
   Delete,
+  BadRequestException,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { UseInterceptors, UploadedFiles } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Public } from 'src/common/decorators/public.decorator';
+import { handleUploadError, uploadOptions } from 'src/common/helpers/multer.helper';
 
 @Controller('products')
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(private readonly productsService: ProductsService) { }
 
   @Public()
   @Post()
-  create(@Body() createProductDto: CreateProductDto) {
-    return this.productsService.create(createProductDto);
+  @UseInterceptors(FilesInterceptor('images', 5, uploadOptions))
+  async create(
+    @Body() dto: CreateProductDto,
+    @UploadedFiles() files: Express.Multer.File[],
+  ) {
+    try {
+      if (!files || files.length === 0) {
+        throw new BadRequestException('Minimal 1 image harus diupload');
+      }
+      return this.productsService.create(dto, files);
+    } catch (error) {
+      handleUploadError(error);
+    }
+
   }
 
   @Public()
