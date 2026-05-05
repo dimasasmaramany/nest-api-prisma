@@ -96,4 +96,53 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-# nest-api-prisma
+# NestJS Prisma E-Commerce API
+
+## 📝 Catatan Struktur & Fitur Baru (Update 2026)
+
+### 1. Struktur Folder (Clean Architecture)
+Aplikasi ini telah direstrukturisasi untuk menggunakan pendekatan modular yang rapi:
+- `src/modules/`: Berisi seluruh module fitur bisnis utama (misalnya `users`, `prisma`, dll).
+- `src/common/`: Berisi seluruh kode yang bersifat umum dan bisa digunakan ulang (*reusable*), seperti decorators, guards, dan helpers.
+
+### 2. Validation Helper (Global Pipe)
+Aplikasi ini sekarang menggunakan helper kustom untuk memformat *error* dari `class-validator` menjadi *response* API yang seragam:
+```json
+{
+  "status": false,
+  "message": "Validation failed",
+  "errors": [
+    {
+      "field": "email",
+      "messages": ["email must be an email"]
+    }
+  ]
+}
+```
+
+### 3. Role-Based Access Control (RBAC) & Guest Access
+Aplikasi ini dilengkapi dengan dua guard global:
+- `AuthGuard`: Memastikan request memiliki *Authorization* header (Mock login).
+- `RolesGuard`: Mengecek role user apakah sesuai dengan spesifikasi endpoint.
+
+**Cara Penggunaan:**
+- `@Public()`: Gunakan decorator ini di atas *controller* atau *method* yang boleh diakses oleh **Guest** (tanpa login).
+- `@Roles(Role.ADMIN, Role.SUPER_ADMIN)`: Gunakan decorator ini untuk membatasi endpoint hanya untuk role tertentu.
+
+Contoh:
+```typescript
+import { Public } from 'src/common/decorators/public.decorator';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { Role } from '@prisma/client';
+
+@Get('public-data')
+@Public()
+getPublicData() { return "Akses terbuka"; }
+
+@Delete(':id')
+@Roles(Role.ADMIN)
+deleteData() { return "Hanya admin yang bisa akses"; }
+```
+
+> **Catatan Prisma**:
+> Client Prisma di-*generate* menggunakan metode *default* (`node_modules/@prisma/client`). Jangan lupa menjalankan `npx prisma generate` jika ada perubahan skema database.
