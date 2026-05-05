@@ -7,15 +7,16 @@ import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     const { password, ...rest } = createUserDto;
     const hashPass = await bcrypt.hash(password, 10);
+
     return this.prisma.user.create({
       data: {
         ...rest,
-        password: hashPass, // Pastikan key ini sama dengan di schema.prisma
+        password: hashPass,
       },
     });
   }
