@@ -5,7 +5,8 @@ import { PrismaModule } from './modules/prisma/prisma.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './modules/users/users.module';
-import { AuthGuard } from './common/guards/auth.guard';
+import { AuthModule } from './modules/auth/auth.module';
+import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { ProductsModule } from './modules/products/products.module';
 import { CategoryModule } from './modules/category/category.module';
@@ -13,9 +14,10 @@ import { CategoryModule } from './modules/category/category.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true, // SANGAT PENTING: Agar variabel env terbaca di semua module
+      isGlobal: true,
     }),
     PrismaModule,
+    AuthModule,
     UsersModule,
     ProductsModule,
     CategoryModule,
@@ -25,7 +27,7 @@ import { CategoryModule } from './modules/category/category.module';
     AppService,
     {
       provide: APP_GUARD,
-      useClass: AuthGuard,
+      useClass: JwtAuthGuard,
     },
     {
       provide: APP_GUARD,
